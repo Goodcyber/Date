@@ -1,0 +1,164 @@
+<p>Date:</p>
+<center>
+<h:form enctype="multipart/form-data">
+
+
+    <p:panelGrid styleClass="main-panel" columns="2">
+
+        <f:facet name="header">
+            <h:outputText value="WorkON Dev. Quality Check Tool" style="font-size:16px" />
+            <h:outputLink value="https://inside-wiki.bosch.com/confluence/display/woco/18.0+Dev.+tool+according+to+Dev.+guideline"
+                target="_blank">
+
+                <h:graphicImage id="helpIcon" value="/imgs/help.png" style="margin-left:10px" />
+                <p:tooltip for="helpIcon" value="Go to wiki for more information" />
+            </h:outputLink>
+            <p:commandButton value="Validate apl" id="valiNoApl" actionListener="#{fileManager.checkAplExistToExcel()}" ajax="false"
+                style="width: 158px; height: 40px" rendered="false" />
+            <p:commandButton value="Trigger Batch Validation!" id="trigerBatch" actionListener="#{fileManager.writeResultToExcel()}" ajax="false"
+                style="width: 158px; height: 40px; position: relative; left: 300px;" />
+            <p:tooltip for="trigerBatch" value="Validate all projects under '/WOQC' folder to excel report.  It will take some minutes!" />
+
+        </f:facet>
+
+        <p:panel style="width:500px;border:0; padding:0;">
+            <p:panel style="border:0; padding:0;">              
+                <p:fileUpload fileUploadListener="#{validator.validateAll}" mode="advanced" update="projectDetails,valiResult" sizeLimit="1000000"
+                    allowTypes="/(\.|\/)(gif|jpe?g|png|txt|zip)$/" multiple="true" />
+                    <p id="demo"></p>
+
+                    <script> document.getElementById("demo").innerHTML = Date(); </script>
+            </p:panel>
+
+            <p:panel style="margin-top:30px;border:0">
+
+            <h:outputText value="                           " />
+                <h:outputText value="Validation result :" style="font-weight: bold" />
+
+            </p:panel>
+
+            <p:dataTable id="valiResult" var="_item" value="#{validator.validationItems}">
+
+                <p:column headerText="Code" width="10%" style="text-align:center" styleClass="pass-item-green" rendered="#{_item.result.flag == 'Pass'}">
+                    <h:outputText id="valiCodePass" value="#{_item.code}" />
+                    <p:tooltip for="valiCodePass" value="#{_item.content}" showEffect="slide" hideEffect="slide" />
+                </p:column>
+
+                <p:column headerText="Result" width="90%" resizable="false" styleClass="pass-item-green" rendered="#{_item.result.flag == 'Pass'}"
+                    style="white-space: normal; text-align:center">
+                    <h:outputText value="#{_item.result.flag} : #{_item.result.content}" rendered="#{_item.result.content != null}" />
+                    <h:outputText value="#{_item.result.flag}" rendered="#{_item.result.content == null}" />
+
+                </p:column>
+
+                <p:column headerText="Code" width="10%" style="text-align:center" styleClass="fail-item-red" rendered="#{_item.result.flag == 'Fail'}">
+                    <h:outputText id="valiCodeFail" value="#{_item.code}" />
+                    <p:tooltip for="valiCodeFail" value="#{_item.content}" showEffect="slide" hideEffect="slide" />
+                </p:column>
+
+                <p:column headerText="Result" width="90%" resizable="false" styleClass="fail-item-red" rendered="#{_item.result.flag == 'Fail'}"
+                    style="white-space: normal; text-align:center">
+                    <h:outputText value="#{_item.result.flag} : #{_item.result.content}" />
+                </p:column>
+
+                <p:column headerText="Code" width="10%" style="text-align:center" styleClass="warn-item-yellow" rendered="#{_item.result.flag == 'Warn'}">
+                    <h:outputText id="valiCodeWarn" value="#{_item.code}" />
+                    <p:tooltip for="valiCodeWarn" value="#{_item.content}" showEffect="slide" hideEffect="slide" />
+                </p:column>
+
+                <p:column headerText="Result" width="90%" resizable="false" styleClass="warn-item-yellow" rendered="#{_item.result.flag == 'Warn'}"
+                    style="white-space: normal; text-align:center">
+                    <h:outputText value="#{_item.result.flag} : #{_item.result.content}" />
+                </p:column>
+
+            </p:dataTable>
+        </p:panel>
+
+
+
+        <p:panel id="projectDetails" style="width:500px;border:0px;padding-top: 5px;">
+            <h:outputText value="Project details :" style="font-weight: bold;" />
+
+            <p:panelGrid columns="2" style="margin-top:20px;border:0" columnClasses="project-info-col-label,project-info-col-value">    
+
+                <h:outputText value="Project name (in source)" />
+                <h:outputText value="#{validator.project.name}" />
+
+                <h:outputText value="Project key" />
+                <h:outputText value="#{validator.project.key}" />
+
+                <h:outputText value="Language available" />
+                <h:outputText value="#{validator.project.lanInfo}" />
+
+                <h:outputText value="Interface | configed -> used" />
+                <h:outputText value="#{validator.project.itfInfo}" />
+
+                <h:outputText value="Interface | web service | used" />
+                <h:outputText value="#{validator.project.itConfig.wfIterfaces.size()}" />
+
+                <h:outputText value="Interface | old excel | used" />
+                <h:outputText value="#{validator.project.itConfig.excelIterfaces.size()}" />
+
+                <h:outputText value="Interface | database | used" />
+                <h:outputText value="#{validator.project.itConfig.dbIterfaces.size()}" />
+
+                <h:outputText value="Workflow | configured | used" />
+                <h:outputText value="" rendered="#{validator.project.configuredWfs.size() == null}" />
+                <h:outputText value="#{validator.project.configuredWfs.size()} -> #{validator.project.usedWfs.size()}"
+                    rendered="#{validator.project.configuredWfs.size() != null}" />
+
+                <h:outputText value="Escalation | used" />
+                <h:outputText value="#{validator.project.escalationConfig.escalationItems.size()}" />
+
+                <h:outputText value="Unused custom field amount" />
+                <h:outputText value="#{validator.project.unusedCustomField}" />
+
+                <h:outputText value="Lines of javascript" />
+                <h:outputText value="#{validator.project.getJavaLines()}" />
+
+                <h:outputText value="Lines of velocityscript" />
+                <h:outputText value="#{validator.project.getVelocityLines()}" />
+
+                <h:outputText value="Amount of used user picker" />
+                <h:outputText value="#{validator.project.getUserPicker()}" />
+
+                <h:outputText value="IssueType | configed -> used" />
+                <h:outputText value="#{validator.project.getIssueTypeInfo()}" />
+
+                <h:outputText value="IssueType list" />
+                <h:outputText value="#{validator.project.getIssueType()}" />
+
+                <h:outputText value="Used Non-standard status" />
+                <h:outputText value="#{validator.project.getStatus()}" />
+
+                <h:outputText value="Used Non-standard resolution" />
+                <h:outputText value="#{validator.project.getLangPropertiesNames()}" />
+
+                <h:outputText value="Amount of used parallel approval lines // Amount of used sequential approval lines" />
+                <h:outputText value="#{validator.project.getParallelApprovalLines()} // #{validator.project.getSequentialApprovalLines()}" 
+                rendered="#{validator.project.getParallelApprovalLines() != null}" />
+            </p:panelGrid>
+        </p:panel>
+
+
+
+        <f:facet name="footer">
+            <center>
+                <h:outputText value="Innovated and developed by CI/AFR-CN  V1.4" style="color:grey" />
+            </center>
+        </f:facet>
+    </p:panelGrid>
+
+
+</h:form>
+
+<p:ajaxStatus style="width:64px;height:64px;position:fixed;right:5px;bottom:5px">
+    <f:facet name="start">
+        <p:graphicImage value="/imgs/loading.gif" />
+    </f:facet>
+
+    <f:facet name="complete">
+        <h:outputText value="" />
+    </f:facet>
+</p:ajaxStatus>
+</center>
